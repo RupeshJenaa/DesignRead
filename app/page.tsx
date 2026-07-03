@@ -1,18 +1,25 @@
 /**
- * DesignRead — Landing Page
- * Placeholder for Phase 0 — will be replaced with full upload workspace in Phase 1+.
+ * DesignRead — Home Page
+ * Slice 1.1: Renders the UploadCard.
+ * onUploadClick is a no-op placeholder — Slice 1.2 will wire up the file picker.
  */
+import UploadCard from "@/components/upload/UploadCard";
+
 export default function HomePage() {
   return (
-    <main className="min-h-screen flex items-center justify-center">
-      <div className="text-center space-y-4">
-        <h1 className="font-serif text-5xl text-[#F2F2F2] tracking-tight">
+    <main className="min-h-screen bg-background flex flex-col items-center justify-center px-4 gap-8">
+      {/* Wordmark */}
+      <div className="text-center space-y-2">
+        <h1 className="font-serif text-5xl text-text-primary tracking-tight">
           DesignRead
         </h1>
-        <p className="text-[#8C8C8C] text-sm uppercase tracking-widest">
-          Foundation ready · Phase 0 complete
+        <p className="text-text-secondary text-xs uppercase tracking-[0.15em] font-medium">
+          AI Design Analysis
         </p>
       </div>
+
+      {/* Upload card */}
+      <UploadCard />
     </main>
   );
 }
