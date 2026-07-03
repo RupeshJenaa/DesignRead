@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── CSS Custom Properties (Design System Tokens) ─── */
+:root {
+  --background: #0D0D0D;
+  --surface: #1A1A1A;
+  --border: #262626;
+  --text-primary: #F2F2F2;
+  --text-secondary: #8C8C8C;
+}
+
+/* ─── Base Reset ──────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  background-color: var(--background);
+  color: var(--text-primary);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Respect user preference for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─── Selection ───────────────────────────────────────── */
+::selection {
+  background-color: #F2F2F2;
+  color: #0D0D0D;
+}
+
+/* ─── Scrollbar (minimal, on-brand) ─────────────────── */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* ─── Focus States (accessible, minimal) ─────────────── */
+:focus-visible {
+  outline: 1.5px solid var(--text-secondary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
