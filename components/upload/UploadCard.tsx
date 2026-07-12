@@ -2,38 +2,76 @@
 
 /**
  * DesignRead — UploadCard
- * Slice 1.2: File picker connected.
- * - Hidden <input type="file"> triggered by the button
- * - Selected File stored in local state
+ * Slice 1.3: Drag & Drop added.
+ * - dragenter / dragleave / dragover / drop handlers on the upload zone
+ * - isDragging state drives a visual highlight on the dashed border
+ * - Dropped file lands in the same selectedFile state as the file picker
  * - No validation yet (Slice 1.4). No preview yet (Slice 1.5).
  */
 
 import { useRef, useState } from "react";
 import { ACCEPTED_MIME_TYPES } from "@/lib/constants";
+import clsx from "clsx";
 
 export default function UploadCard() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
-  /** Open the OS file picker */
-  function handleButtonClick() {
-    inputRef.current?.click();
-  }
-
-  /** Capture the selected file — no validation yet */
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  /** Store file and log it — shared by picker and drop */
+  function captureFile(file: File) {
     setSelectedFile(file);
     console.log("[DesignRead] File selected:", {
       name: file.name,
       type: file.type,
       size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
     });
+  }
 
-    // Reset so the same file can be re-selected if needed
-    e.target.value = "";
+  /** Open the OS file picker */
+  function handleButtonClick() {
+    inputRef.current?.click();
+  }
+
+  /** Capture file from the hidden input */
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    captureFile(file);
+    e.target.value = ""; // allow re-selecting the same file
+  }
+
+  /** Prevent default browser behaviour (opening the file) */
+  function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  /** Highlight the zone when a dragged item enters */
+  function handleDragEnter(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }
+
+  /** Remove highlight when the dragged item leaves */
+  function handleDragLeave(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    e.stopPropagation();
+    // Only clear if leaving the zone entirely (not entering a child element)
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+    setIsDragging(false);
+  }
+
+  /** Capture the dropped file */
+  function handleDrop(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    captureFile(file);
   }
 
   return (
@@ -52,10 +90,20 @@ export default function UploadCard() {
       {/* Outer card */}
       <div className="bg-surface border border-border rounded-card p-7">
 
-        {/* Upload zone — dashed inner border, per PRD F-01 */}
-        <div className="border border-dashed border-border rounded-card-inner p-8 flex flex-col items-center gap-5 text-center">
-
-          {/* Icon */}
+        {/* Upload zone — drag target, dashed inner border per PRD F-01 */}
+        <div
+          onDragOver={handleDragOver}
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          className={clsx(
+            "border border-dashed rounded-card-inner p-8 flex flex-col items-center gap-5 text-center transition-colors duration-fast",
+            isDragging
+              ? "border-text-secondary bg-white/[0.02]"   // highlight on drag
+              : "border-border"                             // default state
+          )}
+        >
+          {/* Icon — brightens slightly while dragging */}
           <div className="w-12 h-12 flex items-center justify-center">
             <svg
               width="32"
@@ -67,16 +115,18 @@ export default function UploadCard() {
             >
               <path
                 d="M16 21V11M16 11L12 15M16 11L20 15"
-                stroke="#8C8C8C"
+                stroke={isDragging ? "#F2F2F2" : "#8C8C8C"}
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                style={{ transition: "stroke 150ms" }}
               />
               <path
                 d="M10 23H22"
-                stroke="#8C8C8C"
+                stroke={isDragging ? "#F2F2F2" : "#8C8C8C"}
                 strokeWidth="1.5"
                 strokeLinecap="round"
+                style={{ transition: "stroke 150ms" }}
               />
               <rect
                 x="4"
@@ -84,8 +134,9 @@ export default function UploadCard() {
                 width="24"
                 height="24"
                 rx="6"
-                stroke="#262626"
+                stroke={isDragging ? "#8C8C8C" : "#262626"}
                 strokeWidth="1.5"
+                style={{ transition: "stroke 150ms" }}
               />
             </svg>
           </div>
@@ -93,7 +144,7 @@ export default function UploadCard() {
           {/* Heading */}
           <div className="space-y-2">
             <h2 className="font-serif text-2xl text-text-primary leading-tight tracking-tight">
-              Drop any design here
+              {isDragging ? "Release to upload" : "Drop any design here"}
             </h2>
             <p className="text-text-secondary text-sm leading-relaxed max-w-xs">
               Upload a UI screenshot, landing page, poster, or any visual
